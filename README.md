@@ -2,10 +2,83 @@
 [![Build Status](https://travis-ci.org/vasileuski/markdown.svg?branch=master)](https://travis-ci.org/vasileuski/markdown)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-#### Markdown object creation 
+#### Example
+###### Code
 
 ```php
 $md = new \Vasileuski\Markdown\Markdown();
+
+echo $md->h1('Hello');
+echo $md->h2('Markdown');
+```
+
+###### Output
+
+```markdown
+# Hello
+
+## Markdown
+```
+
+#### Example with Buffer
+###### Code
+
+```php
+$md = new \Vasileuski\Markdown\Markdown();
+$buffer = new \Vasileuski\Markdown\Buffer();
+
+$buffer->add(
+    $md->h1('Heading1'),
+    $md->list(['Item 1', 'Item 2'])
+);
+
+echo $buffer->out(false); // Get output. Buffer still contains content
+echo $buffer;             // The same as above
+echo $buffer->out();      // Get output. Buffer is clear
+echo $buffer;             // Empty output
+```
+
+###### Output
+
+```markdown
+# Heading1
+
+1. Item 1
+2. Item 2
+
+# Heading1
+
+1. Item 1
+2. Item 2
+
+# Heading1
+
+1. Item 1
+2. Item 2
+```
+
+#### Example with multiple Buffers
+###### Code
+
+```php
+$md     = new \Vasileuski\Markdown\Markdown();
+$buffer = new \Vasileuski\Markdown\Buffer();
+
+$header  = $buffer->new()->add($md->h2('Header'));
+$content = $buffer->new()->add($md->h2('Content'));
+$footer  = $buffer->new()->add($md->h2('Footer'));
+
+echo $buffer->add($header, $content, $footer);
+```
+
+###### Output
+
+```markdown
+## Header
+
+## Content
+
+## Footer
 ```
 
 #### Heading
@@ -156,63 +229,45 @@ echo $md->image('Some Image', 'http://example.com/image.png');
 ![Some Image](http://example.com/image.png)
 ```
 
-#### Buffer
+#### Divider
 ###### Code
 
 ```php
-$md = new \Vasileuski\Markdown\Markdown();
-$buffer = new \Vasileuski\Markdown\Buffer();
-
-$buffer->add(
-    $md->h1('Heading1'),
-    $md->list(['Item 1', 'Item 2'])
-);
-
-echo $buffer->out(false); // Get output. Buffer still contains content
-echo $buffer; // The same as above
-echo $buffer->out(); // Get output. Buffer is clear
-echo $buffer; // Empty output
+echo $md->divider();
 ```
 
 ###### Output
 
 ```markdown
-# Heading1
 
-1. Item 1
-2. Item 2
+----
 
-# Heading1
-
-1. Item 1
-2. Item 2
-
-# Heading1
-
-1. Item 1
-2. Item 2
 ```
 
-#### Multiple Buffers
+#### Inline
 ###### Code
 
 ```php
-$md     = new \Vasileuski\Markdown\Markdown();
-$buffer = new \Vasileuski\Markdown\Buffer();
-
-$header  = $buffer->new()->add($md->h2('Header'));
-$content = $buffer->new()->add($md->h2('Content'));
-$footer  = $buffer->new()->add($md->h2('Footer'));
-
-echo $buffer->add($header, $content, $footer);
+echo $md->inline('Text' . PHP_EOL . 'With' . PHP_EOL . 'EOL');
 ```
 
 ###### Output
 
 ```markdown
-## Header
+TextWithEOL
+```
 
-## Content
+#### Escape
+Escaped characters:
+  \ ` * _ { } [ ] ( ) # + - . !
+###### Code
 
-## Footer
+```php
+echo $md->escape('Some*String#With(Unallowed)Characters');
+```
+
+###### Output
+
+```markdown
+SomeStringWithUnallowedCharacters
 ```
