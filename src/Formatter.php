@@ -259,6 +259,16 @@ class Formatter
      *
      * @return string
      */
+    public function escape(string $text): string
+    {
+        return preg_replace('/(\\\\|`|\*|_|{|}|\[|\]|\(|\)|#|\+|-|\.|!)/', '\\\\\\1', $text);
+    }
+
+    /**
+     * @param  string $text
+     *
+     * @return string
+     */
     private function inline(string $text): string
     {
         return str_replace(PHP_EOL, '', $text);

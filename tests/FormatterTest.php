@@ -323,4 +323,23 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
         $this->assertSame(str_replace(PHP_EOL, '', $text), $matches[1]);
         $this->assertSame(str_replace(PHP_EOL, '', $src), $matches[2]);
     }
+
+    /**
+     * @dataProvider \Vasileuski\MarkdownTests\Data\EscapeDataProvider::provide()
+     *
+     * @param string $text
+     *
+     * @return void
+     */
+    public function testEscape(string $text)
+    {
+        $result   = $this->formatter->escape($text);
+        $expected = $text;
+
+        foreach (\Vasileuski\MarkdownTests\Data\EscapeDataProvider::$toEscape as $character) {
+            $expected = str_replace($character, '\\' . $character, $expected);
+        }
+
+        $this->assertSame($expected, $result);
+    }
 }
