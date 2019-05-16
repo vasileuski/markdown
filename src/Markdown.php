@@ -15,14 +15,14 @@ namespace Vasileuski\Markdown;
  * Class Formatter
  * @package Vasileuski\Markdown
  */
-class Formatter
+class Markdown
 {
     /**
      * @return string
      */
     public function divider(): string
     {
-        return '---';
+        return PHP_EOL . '---' . PHP_EOL;
     }
 
     /**
@@ -183,47 +183,25 @@ class Formatter
             return '';
         }
 
-        array_walk(
-            $headings,
-            function ($item) {
-                if (!is_string($item)) {
-                    return '';
-                }
+        foreach ($headings as $key => $heading) {
+            $headings[$key] = is_string($heading) ? $this->inline($heading) : '';
+        }
 
-                return $this->inline($item);
+        foreach ($data as $i => $row) {
+            if (!is_array($row) && count($row) !== count($headings)) {
+                unset($data[$i]);
+                continue;
             }
-        );
 
-        $headings = array_filter($headings);
-
-        array_walk(
-            $data,
-            function ($item) {
-                if (!is_array($item)) {
-                    return '';
-                }
-
-                array_walk(
-                    $item,
-                    function ($subitem) {
-                        if (!is_string($subitem)) {
-                            return '';
-                        }
-
-                        return $this->inline($subitem);
-                    }
-                );
-
-                return array_filter($item);
+            foreach ($row as $y => $cell) {
+                $row[$y] = is_string($cell) ? $this->inline($cell) : '';
             }
-        );
-
-        array_walk_recursive($data, [$this, 'inline']);
+        }
 
         $table = '';
 
         $table .= implode('|', $headings) . PHP_EOL;
-        $table .= implode('|', array_fill(0, count($headings), '-')) . PHP_EOL;
+        $table .= implode('|', array_fill(0, count($headings), '---')) . PHP_EOL;
 
         foreach ($data as $row) {
             $table .= implode('|', $row) . PHP_EOL;
@@ -261,7 +239,7 @@ class Formatter
      */
     public function escape(string $text): string
     {
-        return preg_replace('/(\\\\|`|\*|_|{|}|\[|\]|\(|\)|#|\+|-|\.|!)/', '\\\\\\1', $text);
+        return preg_replace('/(\\\\|`|\*|_|{|}|\[|\]|\(|\)|#|\+|-|\.|!)/', '\\\\\\1', strip_tags($text));
     }
 
     /**
@@ -269,7 +247,7 @@ class Formatter
      *
      * @return string
      */
-    private function inline(string $text): string
+    public function inline(string $text): string
     {
         return str_replace(PHP_EOL, '', $text);
     }

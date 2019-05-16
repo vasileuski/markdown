@@ -40,6 +40,10 @@ class TableDataProvider implements ProviderInterface
                 'Head 1',
                 'Head 2',
             ],
+            [
+                42,
+                32
+            ],
         ];
     }
 
@@ -53,6 +57,11 @@ class TableDataProvider implements ProviderInterface
             [
                 [ 'Cell 1 1', 'Cell 1 2'],
                 [ 'Cell 2 1', 'Cell 2 2'],
+            ],
+            [
+                32,
+                [ 42, 32 ],
+                [ 42, 32 ],
             ],
         ];
     }

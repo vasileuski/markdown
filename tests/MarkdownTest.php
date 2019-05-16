@@ -11,13 +11,13 @@
 
 namespace Vasileuski\MarkdownTests;
 
-use Vasileuski\Markdown\Formatter;
+use Vasileuski\Markdown\Markdown;
 
 /**
- * Class FormatterTest
+ * Class MarkdownTest
  * @package Vasileuski\MarkdownTests
  */
-class FormatterTest extends \PHPUnit\Framework\TestCase
+class MarkdownTest extends \PHPUnit\Framework\TestCase
 {
     const REGEXP_H1 = '/^\n# (.*)\n$/s';
     const REGEXP_H2 = '/^\n## (.*)\n$/s';
@@ -41,16 +41,26 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
     const REGEXP_IMAGE = '/^!\[(.*)\]\((.*)\)$/s';
 
     /**
-     * @var \Vasileuski\Markdown\Formatter
+     * @var \Vasileuski\Markdown\Markdown
      */
-    protected $formatter;
+    protected $markdown;
 
     /**
      * @return void
      */
     protected function setUp()
     {
-        $this->formatter = new Formatter();
+        $this->markdown = new Markdown();
+    }
+
+    /**
+     * @return void
+     */
+    public function testDivider()
+    {
+        $result = $this->markdown->divider();
+
+        $this->assertSame(PHP_EOL . '---' . PHP_EOL, $result);
     }
 
     /**
@@ -62,7 +72,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testH1(string $text)
     {
-        $result = $this->formatter->h1($text);
+        $result = $this->markdown->h1($text);
 
         $this->assertTrue((bool)preg_match(self::REGEXP_H1, $result, $matches));
         $this->assertSame(str_replace(PHP_EOL, '', $text), $matches[1]);
@@ -77,7 +87,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testH2(string $text)
     {
-        $result = $this->formatter->h2($text);
+        $result = $this->markdown->h2($text);
 
         $this->assertTrue((bool)preg_match(self::REGEXP_H2, $result, $matches));
         $this->assertSame(str_replace(PHP_EOL, '', $text), $matches[1]);
@@ -92,7 +102,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testH3(string $text)
     {
-        $result = $this->formatter->h3($text);
+        $result = $this->markdown->h3($text);
 
         $this->assertTrue((bool)preg_match(self::REGEXP_H3, $result, $matches));
         $this->assertSame(str_replace(PHP_EOL, '', $text), $matches[1]);
@@ -107,7 +117,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testH4(string $text)
     {
-        $result = $this->formatter->h4($text);
+        $result = $this->markdown->h4($text);
 
         $this->assertTrue((bool)preg_match(self::REGEXP_H4, $result, $matches));
         $this->assertSame(str_replace(PHP_EOL, '', $text), $matches[1]);
@@ -122,7 +132,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testH5(string $text)
     {
-        $result = $this->formatter->h5($text);
+        $result = $this->markdown->h5($text);
 
         $this->assertTrue((bool)preg_match(self::REGEXP_H5, $result, $matches));
         $this->assertSame(str_replace(PHP_EOL, '', $text), $matches[1]);
@@ -137,7 +147,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testH6(string $text)
     {
-        $result = $this->formatter->h6($text);
+        $result = $this->markdown->h6($text);
 
         $this->assertTrue((bool)preg_match(self::REGEXP_H6, $result, $matches));
         $this->assertSame(str_replace(PHP_EOL, '', $text), $matches[1]);
@@ -152,7 +162,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testBold(string $text)
     {
-        $result = $this->formatter->bold($text);
+        $result = $this->markdown->bold($text);
 
         $this->assertTrue((bool)preg_match(self::REGEXP_BOLD, $result, $matches));
         $this->assertSame(str_replace(PHP_EOL, '', $text), $matches[1]);
@@ -167,7 +177,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testItalic(string $text)
     {
-        $result = $this->formatter->italic($text);
+        $result = $this->markdown->italic($text);
 
         $this->assertTrue((bool)preg_match(self::REGEXP_ITALIC, $result, $matches));
         $this->assertSame(str_replace(PHP_EOL, '', $text), $matches[1]);
@@ -182,7 +192,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testStriked(string $text)
     {
-        $result = $this->formatter->striked($text);
+        $result = $this->markdown->striked($text);
 
         $this->assertTrue((bool)preg_match(self::REGEXP_STRIKED, $result, $matches));
         $this->assertSame(str_replace(PHP_EOL, '', $text), $matches[1]);
@@ -197,7 +207,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testQuote(string $text)
     {
-        $result = $this->formatter->quote($text);
+        $result = $this->markdown->quote($text);
 
         $this->assertTrue((bool)preg_match(self::REGEXP_QUOTE, $result, $matches));
         $this->assertSame($text, $matches[1]);
@@ -212,7 +222,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testList(array $items, bool $numeric)
     {
-        $result = $this->formatter->list($items, $numeric);
+        $result = $this->markdown->list($items, $numeric);
 
         if (count($items) === 0) {
             $this->assertEmpty($result);
@@ -245,7 +255,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testTable(array $headings, array $data)
     {
-        $result = $this->formatter->table($headings, $data);
+        $result = $this->markdown->table($headings, $data);
 
         if (count($headings) === 0) {
             $this->assertEmpty($result);
@@ -253,14 +263,36 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
             $result = array_values(array_filter(explode(PHP_EOL, $result)));
 
             $resultHead = $result[0] ?? '';
+            $resultHeadCount = substr_count($resultHead, '|') + 1;
+
+            foreach ($headings as $key => $heading) {
+                if (!is_string($heading)) {
+                    $headings[$key] = '';
+                }
+            }
 
             $this->assertSame(implode('|', $headings), $resultHead);
 
             $resultSeparator = $result[1] ?? '';
 
-            $this->assertSame(implode('|', array_fill(0, count($headings), '-')), $resultSeparator);
+            $this->assertSame(implode('|', array_fill(0, $resultHeadCount, '---')), $resultSeparator);
 
             $resultRows = array_values(array_slice($result, 2));
+
+            foreach ($data as $i => $row) {
+                if (!is_array($row)) {
+                    unset($data[$i]);
+                    continue;
+                }
+
+                foreach ($row as $y => $cell) {
+                    if (!is_string($cell)) {
+                        unset($row[$y]);
+                    }
+                }
+            }
+
+            $data = array_values($data);
 
             $this->assertCount(count($data), $resultRows);
 
@@ -280,7 +312,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testCode(string $text, bool $inline = true, string $language = '')
     {
-        $result = $this->formatter->code($text, $inline, $language);
+        $result = $this->markdown->code($text, $inline, $language);
 
         if ($inline) {
             $this->assertTrue((bool)preg_match(self::REGEXP_CODE_INLINE, $result, $matches));
@@ -301,7 +333,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testLink(string $text, string $href)
     {
-        $result = $this->formatter->link($text, $href);
+        $result = $this->markdown->link($text, $href);
 
         $this->assertTrue((bool)preg_match(self::REGEXP_LINK, $result, $matches));
         $this->assertSame(str_replace(PHP_EOL, '', $text), $matches[1]);
@@ -317,7 +349,7 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testImage(string $text, string $src)
     {
-        $result = $this->formatter->image($text, $src);
+        $result = $this->markdown->image($text, $src);
 
         $this->assertTrue((bool)preg_match(self::REGEXP_IMAGE, $result, $matches));
         $this->assertSame(str_replace(PHP_EOL, '', $text), $matches[1]);
@@ -333,13 +365,27 @@ class FormatterTest extends \PHPUnit\Framework\TestCase
      */
     public function testEscape(string $text)
     {
-        $result   = $this->formatter->escape($text);
-        $expected = $text;
+        $result   = $this->markdown->escape($text);
+        $expected = strip_tags($text);
 
         foreach (\Vasileuski\MarkdownTests\Data\EscapeDataProvider::$toEscape as $character) {
             $expected = str_replace($character, '\\' . $character, $expected);
         }
 
         $this->assertSame($expected, $result);
+    }
+
+    /**
+     * @dataProvider \Vasileuski\MarkdownTests\Data\StringDataProvider::provide()
+     *
+     * @param string $text
+     *
+     * @return void
+     */
+    public function testInline(string $text)
+    {
+        $result = $this->markdown->inline($text);
+
+        $this->assertSame(str_replace(PHP_EOL, '', $text), $result);
     }
 }
