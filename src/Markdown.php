@@ -188,7 +188,7 @@ class Markdown
         }
 
         foreach ($data as $i => $row) {
-            if (!is_array($row) && count($row) !== count($headings)) {
+            if (!is_array($row) || count($row) !== count($headings)) {
                 unset($data[$i]);
                 continue;
             }
