@@ -172,42 +172,50 @@ class Markdown
     }
 
     /**
-     * @param  array $headings
      * @param  array $data
      *
      * @return string
+     *
+     * @throws \InvalidArgumentException
      */
-    public function table(array $headings, array $data): string
+    public function table(array $data): string
     {
-        if (!count($headings)) {
-            return '';
+        if (!count($data)) {
+            throw new \InvalidArgumentException('Table data cannot be empty');
         }
 
-        foreach ($headings as $key => $heading) {
-            $headings[$key] = is_string($heading) ? $this->inline($heading) : '';
-        }
-
-        foreach ($data as $i => $row) {
-            if (!is_array($row) || count($row) !== count($headings)) {
-                unset($data[$i]);
-                continue;
-            }
-
-            foreach ($row as $y => $cell) {
-                $row[$y] = is_string($cell) ? $this->inline($cell) : '';
-            }
-        }
-
-        $table = '';
-
-        $table .= implode('|', $headings) . PHP_EOL;
-        $table .= implode('|', array_fill(0, count($headings), '---')) . PHP_EOL;
+        $size = count($data[0]);
 
         foreach ($data as $row) {
+            if (!is_array($row)) {
+                throw new \InvalidArgumentException('Table row must be an array');
+            }
+
+            if ($size !== count($row)) {
+                throw new \InvalidArgumentException('Table rows must have the same size');
+            }
+        }
+
+        array_walk_recursive($data, function (&$item) {
+            if (is_bool($item)) {
+                $item = $item ? 'true' : 'false';
+            } elseif ($item === null) {
+                $item = 'null';
+            } elseif (is_array($item)) {
+                $item = json_encode($item);
+            } else {
+                $item = $this->inline((string) $item);
+            }
+        });
+
+        $table  = PHP_EOL . implode('|', $data[0]) . PHP_EOL;
+        $table .= implode('|', array_fill(0, $size, '---')) . PHP_EOL;
+
+        foreach (array_slice($data, 1, count($data) - 1) as $row) {
             $table .= implode('|', $row) . PHP_EOL;
         }
 
-        return PHP_EOL . $table . PHP_EOL;
+        return $table;
     }
 
     /**
@@ -239,7 +247,7 @@ class Markdown
      */
     public function escape(string $text): string
     {
-        return preg_replace('/(\\\\|`|\*|_|{|}|\[|\]|\(|\)|#|\+|-|\.|!)/', '\\\\\\1', strip_tags($text));
+        return preg_replace('/(\\\\|`|\*|_|{|}|\[|\]|\(|\)|#|\+|-|\.|!)/', '\\\\\\1', $text);
     }
 
     /**
@@ -250,5 +258,26 @@ class Markdown
     public function inline(string $text): string
     {
         return str_replace(PHP_EOL, '', $text);
+    }
+
+    /**
+     * @param  string $text
+     *
+     * @return string
+     */
+    public function comment(string $text): string
+    {
+        if (!trim($text)) {
+            return '';
+        }
+
+        $comment = '';
+        $lines   = array_filter(explode(PHP_EOL, $text));
+
+        foreach ($lines as $line) {
+            $comment .= PHP_EOL . '[comment]: # (' . $line . ')' . PHP_EOL;
+        }
+
+        return $comment;
     }
 }

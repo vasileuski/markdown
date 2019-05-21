@@ -40,6 +40,8 @@ class MarkdownTest extends \PHPUnit\Framework\TestCase
     const REGEXP_LINK  = '/^\[(.*)\]\((.*)\)$/s';
     const REGEXP_IMAGE = '/^!\[(.*)\]\((.*)\)$/s';
 
+    const REGEXP_COMMENT = '/^\[comment\]: # \((.*)\)$/s';
+
     /**
      * @var \Vasileuski\Markdown\Markdown
      */
@@ -253,53 +255,37 @@ class MarkdownTest extends \PHPUnit\Framework\TestCase
      *
      * @return void
      */
-    public function testTable(array $headings, array $data)
+    public function testTable(array $data)
     {
-        $result = $this->markdown->table($headings, $data);
-
-        if (count($headings) === 0) {
-            $this->assertEmpty($result);
+        if (count($data) === 0) {
+            $this->expectException(\InvalidArgumentException::class);
         } else {
-            $result = array_values(array_filter(explode(PHP_EOL, $result)));
+            $size = count($data[0]);
 
-            $resultHead = $result[0] ?? '';
-            $resultHeadCount = substr_count($resultHead, '|') + 1;
-
-            foreach ($headings as $key => $heading) {
-                if (!is_string($heading)) {
-                    $headings[$key] = '';
-                }
-            }
-
-            $this->assertSame(implode('|', $headings), $resultHead);
-
-            $resultSeparator = $result[1] ?? '';
-
-            $this->assertSame(implode('|', array_fill(0, $resultHeadCount, '---')), $resultSeparator);
-
-            $resultRows = array_values(array_slice($result, 2));
-
-            foreach ($data as $i => $row) {
+            foreach ($data as $row) {
                 if (!is_array($row)) {
-                    unset($data[$i]);
-                    continue;
+                    $this->expectException(\InvalidArgumentException::class);
+                    break;
                 }
 
-                foreach ($row as $y => $cell) {
-                    if (!is_string($cell)) {
-                        unset($row[$y]);
-                    }
+                if ($size !== count($row)) {
+                    $this->expectException(\InvalidArgumentException::class);
+                    break;
                 }
             }
+        }
 
-            $data = array_values($data);
+        $result = $this->markdown->table($data);
 
-            $this->assertCount(count($data), $resultRows);
+        $parts = array_filter(explode(PHP_EOL, $result));
+        $size = substr_count($parts[0], '|') + 1;
 
-            foreach ($resultRows as $key => $resultRow) {
-                $expectedRow = str_replace(PHP_EOL, '', implode('|', $data[$key]));
-                $this->assertSame($expectedRow, $resultRow);
-            }
+        $this->assertSame(count($data), count($parts) - 1);
+        $this->assertSame(count($data[0]), $size);
+        $this->assertSame(implode('|', array_fill(0, $size, '---')), $data[1]);
+
+        foreach (array_slice(2, count($data) - 1) as $key => $row) {
+            $this->assertSame(count($data[$key + 1]), $size);
         }
     }
 
@@ -366,7 +352,7 @@ class MarkdownTest extends \PHPUnit\Framework\TestCase
     public function testEscape(string $text)
     {
         $result   = $this->markdown->escape($text);
-        $expected = strip_tags($text);
+        $expected = $text;
 
         foreach (\Vasileuski\MarkdownTests\Data\EscapeDataProvider::$toEscape as $character) {
             $expected = str_replace($character, '\\' . $character, $expected);
@@ -387,5 +373,36 @@ class MarkdownTest extends \PHPUnit\Framework\TestCase
         $result = $this->markdown->inline($text);
 
         $this->assertSame(str_replace(PHP_EOL, '', $text), $result);
+    }
+
+    /**
+     * @dataProvider \Vasileuski\MarkdownTests\Data\StringDataProvider::provide()
+     *
+     * @param string $text
+     *
+     * @return void
+     */
+    public function testComment(string $text)
+    {
+        $result = $this->markdown->comment($text);
+
+        if (trim($text)) {
+            $this->assertStringStartsWith(PHP_EOL, $result);
+            $this->assertStringEndsWith(PHP_EOL, $result);
+
+            $resultLines = array_values(array_filter(explode(PHP_EOL, $result)));
+            $expectedLines = array_values(array_filter(explode(PHP_EOL, $text)));
+
+            $this->assertSameSize($expectedLines, $resultLines);
+
+            foreach ($resultLines as $key => $resultLine) {
+                $expectedLine = $expectedLines[$key];
+
+                $this->assertTrue((bool)preg_match(self::REGEXP_COMMENT, $resultLine, $matches));
+                $this->assertSame($expectedLine, $matches[1]);
+            }
+        } else {
+            $this->assertEmpty($result);
+        }
     }
 }

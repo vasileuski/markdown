@@ -185,13 +185,11 @@ echo $md->list(['Item 1', 'Item 2'], false);
 ###### Code
 
 ```php
-echo $md->table(
+echo $md->table([
     [ 'Head 1', 'Head 2' ],
-    [
-        [ '1x1', '1x2' ],
-        [ '2x1', '2x2' ],
-    ]
-);
+    [ '1x1', '1x2' ],
+    [ '2x1', '2x2' ],
+]);
 ```
 
 ###### Output
@@ -263,11 +261,24 @@ Escaped characters:
 ###### Code
 
 ```php
-echo $md->escape('Some*String#With(Unallowed)Characters');
+echo $md->escape('*String#With(Escaped)Characters');
 ```
 
 ###### Output
 
 ```markdown
-SomeStringWithUnallowedCharacters
+\*String\#With\(Escaped\)Characters
+```
+
+#### Comment
+###### Code
+
+```php
+echo $md->comment('Hidden text');
+```
+
+###### Output
+
+```markdown
+[comment]: # (Hidden text)
 ```

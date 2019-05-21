@@ -22,47 +22,26 @@ class TableDataProvider implements ProviderInterface
      */
     public static function provide(): \Iterator
     {
-        foreach (self::getHeadingOptions() as $headings) {
-            foreach (self::getRowOptions() as $rows) {
-                yield [ $headings, $rows ];
-            }
-        }
-    }
-
-    /**
-     * @return array
-     */
-    private static function getHeadingOptions(): array
-    {
-        return [
-            [ ], // empty set
+        return new \ArrayIterator([
             [
-                'Head 1',
-                'Head 2',
-            ],
-            [
-                42,
-                32
-            ],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    private static function getRowOptions(): array
-    {
-        return [
-            [ ], // empty set
-            [
-                [ 'Cell 1 1', 'Cell 1 2'],
-                [ 'Cell 2 1', 'Cell 2 2'],
-            ],
-            [
-                32,
-                [ 42, 32 ],
-                [ 42, 32 ],
-            ],
-        ];
+                [ ], // empty set
+                [
+                    [ 'Head 1', 'Head 2' ],
+                ],
+                [
+                    [ 'Head 1', 'Head 2' ],
+                    [ 'Element 1', 'Element 2', 'Element 3'],
+                ],
+                [
+                    [ 'Head 1', 'Head 2' ],
+                    [ 'Element 1', 'Element 2' ],
+                ],
+                [
+                    [ 'Head 1', 'Head 2' ],
+                    [ true, false ],
+                    [ ['some', 'array'], null ],
+                ]
+            ]
+        ]);
     }
 }
