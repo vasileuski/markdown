@@ -12,7 +12,7 @@
 namespace Vasileuski\Markdown;
 
 /**
- * Class Formatter
+ * Class Markdown
  * @package Vasileuski\Markdown
  */
 class Markdown

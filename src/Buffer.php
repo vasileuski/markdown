@@ -11,6 +11,10 @@
 
 namespace Vasileuski\Markdown;
 
+/**
+ * Class Buffer
+ * @package Vasileuski\Markdown
+ */
 class Buffer
 {
     /**
